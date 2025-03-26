@@ -35,5 +35,5 @@ def load_ppg_data(data_dir):
 data_dir = r"/Dataset/P/green"
 concated_data=load_ppg_data(data_dir)
 concated_data_int=concated_data.astype(int)
-file_name=r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\ppgDataset\concated_ppg_data_positive.txt"
+file_name=r"concated_ppg_data_positive.txt"
 np.savetxt(file_name, concated_data_int,fmt='%7.0f', newline='\n')
