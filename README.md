@@ -5,3 +5,4 @@ PPG 및 ECG 데이터를 생성해주는 트랜스포머 모델을 활용하여 
 Negative PPG data와 Positive PPG data의 전처리를 진행한 후,
 ![PPG data visualization](https://github.com/kb081544/Emotion-Classification-2-Transformer-Application/blob/ef11ab0c1c8b70e42b84cb0013e2fbe99de86ba6/processed_data/emotion_data_visualization.png)
 Heart_PT_generate.py로 각 데이터를 증강시킨다. Negative의 경우, μ+1σ 데이터를 증강시켜 1로 레이블링, Positive는 전부 0으로 레이블링한다.
+![학습 데이터 설명]()
