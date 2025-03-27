@@ -22,8 +22,8 @@ vocab_size = 102  # PPGPT용
 
 model_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\HeartGPT-main\Model_files\PPGPT_500k_iters\PPGPT_500k_iters.pth"
 
-input_csv_path = "high_peak_negative_chunks.csv"  # 증강할 원본 데이터 파일
-output_dir = "augmented_ppg_data"  # 생성된 데이터를 저장할 디렉토리
+input_csv_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data\train_negative_above_threshold_1.csv"
+output_dir = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data"
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -211,24 +211,10 @@ for chunk_idx in tqdm(range(data_chunks.shape[0]), desc="청크 처리 중"):
             'max_value': chunk_max
         })
 
-        sample_df = pd.DataFrame(augmented_signal)
-        sample_path = os.path.join(output_dir, f"augmented_chunk_{chunk_idx}_sample_{i}.csv")
-        sample_df.to_csv(sample_path, index=False, header=False)
-
-        token_df = pd.DataFrame(output_tokens)
-        token_path = os.path.join(output_dir, f"tokens_chunk_{chunk_idx}_sample_{i}.csv")
-        token_df.to_csv(token_path, index=False, header=False)
-
 augmented_data_array = np.array(augmented_data_list)
 augmented_df = pd.DataFrame(augmented_data_array)
-augmented_df.to_csv(os.path.join(output_dir, "all_augmented_data.csv"), index=False, header=False)
+augmented_df.to_csv(os.path.join(output_dir, "train_negative_augmented_1.csv"), index=False, header=False)
 
-original_data_array = np.array(original_data_list)
-original_df = pd.DataFrame(original_data_array)
-original_df.to_csv(os.path.join(output_dir, "all_original_data.csv"), index=False, header=False)
-
-metadata_df = pd.DataFrame(metadata_list)
-metadata_df.to_csv(os.path.join(output_dir, "metadata.csv"), index=False)
 
 print(f"데이터 증강 완료, 생성된 총 샘플 수: {len(augmented_data_list)}")
 print(f"증강된 데이터는 {output_dir} 에 저장됨")

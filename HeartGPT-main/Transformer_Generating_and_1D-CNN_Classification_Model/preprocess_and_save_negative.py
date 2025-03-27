@@ -2,7 +2,7 @@ import numpy as np
 import heartpy as hp
 import matplotlib.pyplot as plt
 
-file_dir_negative = r"/Dataset/ppgDataset/concatenated_ppg_data_negative.txt"
+file_dir_negative = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data\concatenated_ppg_data_negative.txt"
 data_load_negative = np.loadtxt(file_dir_negative)
 
 '''
@@ -74,24 +74,20 @@ print(f"임계값 (mean + std): {threshold}")
 
 threshold_csv_path = f'threshold_value_{std_var}.csv'
 np.savetxt(threshold_csv_path, [threshold], delimiter=',')
-print(f"Threshold 값이 CSV 파일로 저장되었습니다: {threshold_csv_path}")
+print(f"Threshold 값이 CSV 파일로 저장됨: {threshold_csv_path}")
 
-threshold_npy_path = f'threshold_value_{std_var}.npy'
-np.save(threshold_npy_path, threshold)
-print(f"Threshold 값이 NPY 파일로 저장되었습니다: {threshold_npy_path}")
-
-high_peak_indices = np.where(negative_peak_array < threshold)[0]
+high_peak_indices = np.where(negative_peak_array > threshold)[0]
 print(f"조건에 맞는 청크 수: {len(high_peak_indices)} / {len(negative_peak_array)}")
 
 selected_segments = negative_segments[high_peak_indices]
 selected_peak_values = negative_peak_array[high_peak_indices]
 
 if len(selected_segments) > 0:
-    output_path = "high_peak_negative_chunks_negative_below_threshold_1.csv"
+    output_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data\train_negative_above_threshold_1.csv"
     selected_segments_array = np.array(selected_segments)
     np.savetxt(output_path, selected_segments_array, delimiter=',')
-    print(f"CSV 파일이 성공적으로 저장되었습니다: {output_path}")
+    print(f"CSV 파일이 성공적으로 저장됨: {output_path}")
     print(f"저장된 청크 수: {len(selected_segments)}")
     print(f"각 청크 길이: {selected_segments[0].shape[0]}")
 else:
-    print("조건에 맞는 청크가 없습니다.")
+    print("조건에 맞는 청크가 없음")

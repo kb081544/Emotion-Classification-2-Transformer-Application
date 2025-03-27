@@ -1,8 +1,9 @@
 import numpy as np
 import heartpy as hp
 import matplotlib.pyplot as plt
-file_dir_negative = r"/Dataset/ppgDataset/concatenated_ppg_data_positive.txt"
+file_dir_negative = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data\concatenated_ppg_data_positive.txt"
 data_load_negative = np.loadtxt(file_dir_negative)
+
 '''
 positive의 경우 threshold 값 없이 전부 사용
 '''
@@ -59,14 +60,12 @@ def reshape_vector_to_matrix(vector, row_size=500):
 
 
 positive_segments, positive_peak_array = reshape_vector_to_matrix(data_load_negative, 500)
-std_var=2
 neg_mean = np.mean(positive_peak_array)
 pos_std = np.std(positive_peak_array)
 threshold = 0
 
 print(f"Negative Peak Array 평균: {neg_mean}")
 print(f"Negative Peak Array 표준편차: {pos_std}")
-print(f"임계값 (mean + std): {threshold}")
 
 low_peak_indices = np.where(positive_peak_array > threshold)[0]
 print(f"조건에 맞는 청크 수: {len(low_peak_indices)} / {len(positive_peak_array)}")
@@ -75,15 +74,15 @@ selected_segments = positive_segments[low_peak_indices]
 selected_peak_values = positive_peak_array[low_peak_indices]
 
 if len(selected_segments) > 0:
-    output_path = "high_peak_positive_no_threshold.csv"
+    output_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\train_data\train_positive_no_threshold.csv"
 
     selected_segments_array = np.array(selected_segments)
 
     np.savetxt(output_path, selected_segments_array, delimiter=',')
 
-    print(f"CSV 파일이 성공적으로 저장되었습니다: {output_path}")
+    print(f"CSV 파일이 성공적으로 저장됨: {output_path}")
     print(f"저장된 청크 수: {len(selected_segments)}")
     print(f"각 청크 길이: {selected_segments[0].shape[0]}")
 
 else:
-    print("조건에 맞는 청크가 없습니다.")
+    print("조건에 맞는 청크가 없음.")

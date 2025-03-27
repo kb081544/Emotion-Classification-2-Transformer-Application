@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import os
 import random
 
+plt.rcParams['font.family'] ='Malgun Gothic'
+plt.rcParams['axes.unicode_minus'] =False
 
 def plot_and_save_random_samples(num_samples):
     save_path = r"/processed_data/sample_plots"
@@ -13,7 +15,7 @@ def plot_and_save_random_samples(num_samples):
     X = np.load(os.path.join(data_path, "X_data.npy"))
     y = np.load(os.path.join(data_path, "y_labels.npy"))
 
-    print(f"데이터 로드 완료: X shape = {X.shape}, y shape = {y.shape}")
+    print(f"X shape = {X.shape}, y shape = {y.shape}")
 
     positive_indices = np.where(y == 1)[0]
     negative_indices = np.where(y == 0)[0]
@@ -51,7 +53,7 @@ def plot_and_save_random_samples(num_samples):
         plt.close()
         print(f"저장됨: {file_name}")
 
-    print(f"\n총 {len(random_pos_indices) + len(random_neg_indices)}개의 샘플 플롯이 {save_path}에 저장되었습니다.")
+    print(f"\n총 {len(random_pos_indices) + len(random_neg_indices)}개의 샘플 플롯이 {save_path}에 저장됨")
 
 
 if __name__ == "__main__":

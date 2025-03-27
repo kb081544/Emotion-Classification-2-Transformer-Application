@@ -1,5 +1,5 @@
 # HeartGPT Application
-PPG 및 ECG 데이터를 생성해주는 트랜스포머 모델을 활용하여 Emotion Classification 모델 개발
+## 심박 데이터 생성 트랜스포머 모델을 활용한 Emotion Classification 모델 개발
 [HeartGPT 트랜스포머 모델 논문 링크](https://www.arxiv.org/abs/2407.20775)
 
 concat_ppt_data.py를 통해 삼성 스마트워치로 수집한 청색광 PPG 데이터를 감정 별로 전부 concatenate 시켜 학습에 최적화 된 필터링 방법을 통해 Negative PPG data와 Positive PPG data의 전처리를 진행한 후,

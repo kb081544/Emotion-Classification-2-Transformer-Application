@@ -8,12 +8,12 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
-data_path = r"/processed_data"
+data_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data"
 
 X_train = np.load(os.path.join(data_path, "X_train.npy"))
 X_test = np.load(os.path.join(data_path, "X_test.npy"))
-y_train = np.load(os.path.join(data_path, "y_train.npy"))
-y_test = np.load(os.path.join(data_path, "y_test.npy"))
+y_train = np.load(os.path.join(data_path, "Y_train.npy"))
+y_test = np.load(os.path.join(data_path, "Y_test.npy"))
 
 
 print(f"train 데이터: {X_train.shape}, {y_train.shape}")
