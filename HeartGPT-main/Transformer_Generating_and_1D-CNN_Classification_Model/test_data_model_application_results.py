@@ -168,7 +168,7 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
     plt.scatter([i for i in chunk_indices], true_labels, label='실제 label', marker='o', color='blue', alpha=0.6)
     plt.scatter([i for i in usable_indices], [predictions[i] for i in usable_indices],
                 label='CNN 예측', marker='x', color='green', alpha=0.7)
-    plt.scatter(unusable_indices, [-0.2] * len(unusable_indices), label='사용 불가능 청크', marker='|', color='red')
+    plt.scatter(unusable_indices, [-0.2] * len(unusable_indices), label='-1(사용 불가) 청크', marker='|', color='red')
 
     plt.xlabel('청크 인덱스')
     plt.ylabel('label')
@@ -179,7 +179,7 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
 
     # 2. 성능 요약 파이 차트
     plt.subplot(2, 2, 2)
-    labels = ['정확한 예측', '오분류', '사용 불가능']
+    labels = ['정확한 예측', '오분류', '-1(사용 불가)']
     sizes = [len(correct_indices), len(incorrect_indices), len(unusable_indices)]
     colors = ['lightgreen', 'lightcoral', 'lightgray']
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
@@ -207,7 +207,7 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
 
     # 4. 레이블 분포
     plt.subplot(2, 2, 4)
-    distribution_labels = ['Label 0', 'Label 1', '사용 불가능']
+    distribution_labels = ['Label 0', 'Label 1', '-1(사용 불가)']
     distribution_values = [label0_count, label1_count, len(unusable_indices)]
 
     dist_bars = plt.bar(distribution_labels, distribution_values, color=['lightblue', 'lightgreen', 'lightgray'])
@@ -224,15 +224,13 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
                  ha='center', va='bottom')
 
     # 전체 타이틀
-    plt.suptitle(f'{file_name} 분석 결과 \n사용 불가능 청크 비율: {rejected_percent:.1f}%', fontsize=16)
+    plt.suptitle(f'{file_name} 분석 결과 \n-1(사용 불가) 청크 비율: {rejected_percent:.1f}%', fontsize=16)
     plt.tight_layout(rect=[0, 0, 1, 0.96])
 
     # 저장
     output_path = os.path.join(viz_dir, f"{file_name}_analysis.png")
     plt.savefig(output_path)
     plt.close()
-
-    print(f"시각화 저장 완료: {output_path}")
 
 
 def process_ppg_files(file_paths, threshold_value, model_path, viz_dir):
@@ -347,9 +345,10 @@ def create_overall_visualization(results, viz_dir, overall_accuracy, label0_acc,
 
     plt.bar(range(len(file_names)), rejected_percentages, color='salmon')
     plt.xlabel('파일')
-    plt.ylabel('사용 불가능한 청크 비율 (%)')
-    plt.title('파일별 사용 불가능한 청크 비율')
+    plt.ylabel('-1(사용 불가) 청크 비율 (%)')
+    plt.title('파일별 -1(사용 불가) 청크 비율')
     plt.xticks(range(len(file_names)), [f"{i + 1}" for i in range(len(file_names))])
+    plt.ylim(0, 100)
     plt.grid(True, alpha=0.3)
 
     # 4. 전체 요약 파이 차트와 정확도
@@ -360,7 +359,7 @@ def create_overall_visualization(results, viz_dir, overall_accuracy, label0_acc,
     total_rejected = sum(r['rejected_chunks'] for r in results)
 
     plt.pie([total_usable, total_rejected],
-            labels=['사용 가능한 청크', '사용 불가능한 청크'],
+            labels=['사용 가능한 청크', '-1(사용 불가) 청크'],
             colors=['lightgreen', 'lightcoral'],
             autopct='%1.1f%%',
             startangle=90)
