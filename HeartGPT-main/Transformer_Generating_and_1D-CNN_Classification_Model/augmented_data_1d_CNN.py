@@ -8,7 +8,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
-data_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data"
+data_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data"
 
 X_train = np.load(os.path.join(data_path, "X_train.npy"))
 X_test = np.load(os.path.join(data_path, "X_test.npy"))

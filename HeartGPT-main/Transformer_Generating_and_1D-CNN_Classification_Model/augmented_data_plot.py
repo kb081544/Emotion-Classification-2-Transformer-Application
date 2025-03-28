@@ -5,7 +5,7 @@ import random
 
 plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
-save_path = r"/processed_data"
+save_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data]"
 
 X = np.load(os.path.join(save_path, "X_data.npy"))
 y = np.load(os.path.join(save_path, "y_labels.npy"))

@@ -7,8 +7,8 @@ plt.rcParams['font.family'] ='Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] =False
 
 def plot_and_save_random_samples(num_samples):
-    save_path = r"/processed_data/sample_plots"
-    data_path = r"/processed_data"
+    save_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\sample_plots"
+    data_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data"
 
     os.makedirs(save_path, exist_ok=True)
 

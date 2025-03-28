@@ -413,8 +413,8 @@ file_paths = [
 ]
 
 threshold_csv_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\HeartGPT-main\Transformer_Generating_and_1D-CNN_Classification_Model\threshold_value_1.csv"
-model_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\best_emotion_model.h5"
-viz_dir = r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\test_visualization"
+model_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\best_emotion_model.h5"
+viz_dir = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\test_visualization"
 
 threshold_value = np.loadtxt(threshold_csv_path)
 

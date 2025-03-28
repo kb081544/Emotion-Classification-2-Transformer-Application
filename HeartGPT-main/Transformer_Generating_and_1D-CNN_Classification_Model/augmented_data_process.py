@@ -81,8 +81,8 @@ print(f"Labels shape: {y.shape}")
 save_path = r"/processed_data"
 os.makedirs(save_path, exist_ok=True)
 
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\X_data.npy"), X)
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\y_labels.npy"), y)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\X_data.npy"), X)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\y_labels.npy"), y)
 
 print(f"\n데이터 저장됨 : {save_path}")
 print(f"Positive samples (label 0): {len(y_positive)} ({len(y_positive) / len(y) * 100:.1f}%)")
@@ -119,9 +119,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"Training data: {X_train.shape}, {y_train.shape}")
 print(f"Testing data: {X_test.shape}, {y_test.shape}")
 
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\X_train.npy"), X_train)
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\X_test.npy"), X_test)
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\y_train.npy"), y_train)
-np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_data\y_test.npy"), y_test)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\X_train.npy"), X_train)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\X_test.npy"), X_test)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\y_train.npy"), y_train)
+np.save(os.path.join(save_path, r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\y_test.npy"), y_test)
 
 print("Train/test split data saved successfully!")
