@@ -419,5 +419,3 @@ viz_dir = r"C:\Users\user\PycharmProjects\Emotion Classification 3\processed_dat
 threshold_value = np.loadtxt(threshold_csv_path)
 
 results = process_ppg_files(file_paths, threshold_value, model_path, viz_dir)
-
-print("\n프로세스 완료!")
