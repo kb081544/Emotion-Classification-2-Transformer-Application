@@ -91,61 +91,8 @@ def reshape_vector_to_matrix_test(file_dir, threshold_value, model, row_size=blo
     return test_segments, usable_or_rejected, cnn_predictions, true_labels, avg_peak_values
 
 
-def evaluate_file(file_path, threshold_value, model, viz_dir=None, file_name=None):
-    test_segments, usable_or_rejected, cnn_predictions, true_labels, avg_peak_values = reshape_vector_to_matrix_test(
-        file_path, threshold_value, model)
-
-    total_chunks = len(test_segments)
-    rejected_chunks = usable_or_rejected.count(0)
-    rejected_percent = (rejected_chunks / total_chunks) * 100 if total_chunks > 0 else 0
-
-    usable_indices = [i for i, val in enumerate(usable_or_rejected) if val == 1]
-
-    correct_cnn_predictions = sum(1 for i in usable_indices
-                                  if cnn_predictions[i] == true_labels[i])
-    cnn_accuracy = (correct_cnn_predictions / len(usable_indices)) * 100 if len(usable_indices) > 0 else 0
-
-    true_0_indices = [i for i in usable_indices if true_labels[i] == 0]
-    true_1_indices = [i for i in usable_indices if true_labels[i] == 1]
-
-    correct_cnn_0 = sum(1 for i in true_0_indices if cnn_predictions[i] == 0)
-    cnn_0_accuracy = (correct_cnn_0 / len(true_0_indices)) * 100 if len(true_0_indices) > 0 else 0
-
-    correct_cnn_1 = sum(1 for i in true_1_indices if cnn_predictions[i] == 1)
-    cnn_1_accuracy = (correct_cnn_1 / len(true_1_indices)) * 100 if len(true_1_indices) > 0 else 0
-
-    # 결과 시각화
-    if viz_dir and file_name:
-        visualize_results(test_segments, true_labels, cnn_predictions, usable_or_rejected,
-                          viz_dir, file_name, cnn_accuracy, cnn_0_accuracy, cnn_1_accuracy,
-                          len(true_0_indices), len(true_1_indices), rejected_percent)
-
-    # 청크 개수 출력
-    print("정답:", " ".join(map(str, true_labels)))
-    print("CNN 예측:", " ".join(map(str, cnn_predictions)))
-
-    return {
-        'total_chunks': total_chunks,
-        'rejected_chunks': rejected_chunks,
-        'rejected_percent': rejected_percent,
-        'usable_chunks': len(usable_indices),
-        'cnn_correct': correct_cnn_predictions,
-        'cnn_accuracy': cnn_accuracy,
-        'cnn_predictions': cnn_predictions,
-        'true_labels': true_labels,
-        'peak_values': avg_peak_values,
-        'usable_or_rejected': usable_or_rejected,
-        'true_0_count': len(true_0_indices),
-        'true_1_count': len(true_1_indices),
-        'cnn_0_accuracy': cnn_0_accuracy,
-        'cnn_1_accuracy': cnn_1_accuracy,
-        'correct_cnn_0': correct_cnn_0,
-        'correct_cnn_1': correct_cnn_1
-    }
-
-
 def visualize_results(segments, true_labels, predictions, usable_or_rejected, viz_dir, file_name,
-                      accuracy, label0_acc, label1_acc, label0_count, label1_count, rejected_percent):
+                                 accuracy, label0_acc, label1_acc, label0_count, label1_count, rejected_percent):
     # 시각화 디렉토리 생성
     os.makedirs(viz_dir, exist_ok=True)
 
@@ -156,6 +103,10 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
     plt.subplot(2, 2, 1)
     chunk_indices = list(range(len(true_labels)))
 
+    # 전체 청크 수
+    total_chunks = len(segments)
+    half_chunks = total_chunks // 2
+
     # 사용 가능한 청크와 사용 불가능한 청크 분리
     usable_indices = [i for i, val in enumerate(usable_or_rejected) if val == 1]
     unusable_indices = [i for i, val in enumerate(usable_or_rejected) if val == 0]
@@ -164,16 +115,26 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
     correct_indices = [i for i in usable_indices if predictions[i] == true_labels[i]]
     incorrect_indices = [i for i in usable_indices if predictions[i] != true_labels[i] and predictions[i] != -1]
 
-    # 그래프 그리기
-    plt.scatter([i for i in chunk_indices], true_labels, label='실제 label', marker='o', color='blue', alpha=0.6)
+    # 그래프 그리기 - 앞/뒤 부분 색상 구분
+    # 앞부분 (파란색)
+    front_indices = [i for i in chunk_indices if i < half_chunks]
+    plt.scatter(front_indices, [true_labels[i] for i in front_indices],
+                label='실제 label (앞부분)', marker='o', color='blue', alpha=0.5)
+
+    # 뒷부분 (빨간색)
+    back_indices = [i for i in chunk_indices if i >= half_chunks]
+    plt.scatter(back_indices, [true_labels[i] for i in back_indices],
+                label='실제 label (뒷부분)', marker='o', color='red', alpha=0.5)
+
+    # CNN 예측값
     plt.scatter([i for i in usable_indices], [predictions[i] for i in usable_indices],
                 label='CNN 예측', marker='x', color='green', alpha=0.7)
-    plt.scatter(unusable_indices, [-0.2] * len(unusable_indices), label='-1(사용 불가) 청크', marker='|', color='red')
+    plt.scatter(unusable_indices, [-0.2] * len(unusable_indices), label='-1(사용 불가) 청크', marker='|', color='black')
 
     plt.xlabel('청크 인덱스')
     plt.ylabel('label')
     plt.yticks([-0.2, 0, 1], ['사용불가', '0', '1'])
-    plt.title(f'파일: {file_name} - 예측 결과')
+    plt.title(f'파일: {file_name} - 예측 결과 (앞:파랑/뒤:빨강)')
     plt.grid(True, alpha=0.3)
     plt.legend()
 
@@ -205,16 +166,25 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
                  f'{height:.1f}%',
                  ha='center', va='bottom')
 
-    # 4. 레이블 분포
+    # 4. 앞/뒤 분포
     plt.subplot(2, 2, 4)
-    distribution_labels = ['Label 0', 'Label 1', '-1(사용 불가)']
-    distribution_values = [label0_count, label1_count, len(unusable_indices)]
 
-    dist_bars = plt.bar(distribution_labels, distribution_values, color=['lightblue', 'lightgreen', 'lightgray'])
+    # 앞/뒤 부분에서의 label 분포
+    front_0 = sum(1 for i in front_indices if true_labels[i] == 0)
+    front_1 = sum(1 for i in front_indices if true_labels[i] == 1)
+    back_0 = sum(1 for i in back_indices if true_labels[i] == 0)
+    back_1 = sum(1 for i in back_indices if true_labels[i] == 1)
 
-    plt.xlabel('레이블 유형')
+    labels = ['앞부분 Label 0', '앞부분 Label 1', '뒷부분 Label 0', '뒷부분 Label 1']
+    values = [front_0, front_1, back_0, back_1]
+    colors = ['lightblue', 'blue', 'lightsalmon', 'red']
+
+    dist_bars = plt.bar(labels, values, color=colors)
+
+    plt.xlabel('레이블 유형 (앞/뒤)')
     plt.ylabel('청크 수')
-    plt.title('청크 레이블 분포')
+    plt.title('청크 레이블 분포 (앞/뒤)')
+    plt.xticks(rotation=45, ha='right')
 
     # 바 위에 값 표시
     for bar in dist_bars:
@@ -228,16 +198,177 @@ def visualize_results(segments, true_labels, predictions, usable_or_rejected, vi
     plt.tight_layout(rect=[0, 0, 1, 0.96])
 
     # 저장
-    output_path = os.path.join(viz_dir, f"{file_name}_analysis.png")
+    output_path = os.path.join(viz_dir, f"{file_name}_analysis_colored.png")
     plt.savefig(output_path)
     plt.close()
+
+    print(f"파일 저장 : {output_path}")
+
+
+def visualize_overlapping_chunks(file_paths, viz_dir):
+    """
+    각 파일의 PPG 데이터를 500 데이터 포인트씩 겹쳐 그리는 함수
+    앞부분 청크는 파란색, 뒷부분 청크는 빨간색으로 시각화
+    """
+    os.makedirs(viz_dir, exist_ok=True)
+
+    for file_path in file_paths:
+        file_name = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
+        print(f"Processing file: {file_name}")
+
+        try:
+            file = open(file_path, 'r')
+            file_data = []
+            lines = file.readlines()
+            for line in lines[15:-1]:
+                values = line.strip().split()
+                second_int = int(values[1])
+                file_data.append(second_int)
+            file.close()
+
+            block_size = 500
+            n = len(file_data)
+
+            plt.figure(figsize=(14, 8))
+
+            # 총 청크 수 계산
+            total_chunks = (n - block_size) // block_size + 1
+            half_chunks = total_chunks // 2
+
+            front_chunks = []
+            back_chunks = []
+
+            for i in range(total_chunks):
+                start_idx = i * block_size
+                end_idx = start_idx + block_size
+
+                if end_idx <= n:
+                    chunk_data = file_data[start_idx:end_idx]
+
+                    # bandpass 필터 적용
+                    filtered_data = hp.filter_signal(chunk_data, cutoff=[0.5, 8],
+                                                     sample_rate=25, order=3, filtertype="bandpass")
+
+                    # 앞부분과 뒷부분 청크 분리
+                    if i < half_chunks:
+                        front_chunks.append(filtered_data)
+                    else:
+                        back_chunks.append(filtered_data)
+
+            # 모든 청크에 대해 동일한 x축 (0-499)
+            x_values = np.arange(block_size)
+
+            # 앞부분 청크 그리기 (파란색)
+            for chunk in front_chunks:
+                plt.plot(x_values, chunk, color='blue', alpha=0.5)
+
+            # 뒷부분 청크 그리기 (빨간색)
+            for chunk in back_chunks:
+                plt.plot(x_values, chunk, color='red', alpha=0.5)
+
+            # 청크 수 표시
+            plt.title(
+                f'PPG 데이터 청크 비교 (Bandpass Filter 적용): {file_name}\n앞부분(파랑, {len(front_chunks)}개) vs 뒷부분(빨강, {len(back_chunks)}개)')
+            plt.xlabel('Sample Index (within chunk)')
+            plt.ylabel('PPG Value')
+            plt.grid(True, alpha=0.3)
+
+            # 범례 추가
+            plt.plot([], [], color='blue', alpha=0.5, label=f'앞부분 청크 (n={len(front_chunks)})')
+            plt.plot([], [], color='red', alpha=0.5, label=f'뒷부분 청크 (n={len(back_chunks)})')
+            plt.legend()
+
+            # 저장
+            output_path = os.path.join(viz_dir, f"{file_name}_overlapping_chunks.png")
+            plt.savefig(output_path)
+            plt.close()
+
+            print(f"시각화 파일 저장 완료: {output_path}")
+
+            # 평균 그래프 그리기
+            plt.figure(figsize=(14, 8))
+
+            # 앞/뒤 청크의 평균 계산
+            front_mean = np.mean(front_chunks, axis=0) if front_chunks else np.zeros(block_size)
+            back_mean = np.mean(back_chunks, axis=0) if back_chunks else np.zeros(block_size)
+
+            # 평균 그래프 그리기
+            plt.plot(x_values, front_mean, color='blue', linewidth=2, label=f'앞부분 평균 (n={len(front_chunks)})')
+            plt.plot(x_values, back_mean, color='red', linewidth=2, label=f'뒷부분 평균 (n={len(back_chunks)})')
+
+            plt.title(f'PPG 데이터 평균 비교 (Bandpass Filter 적용): {file_name}\n앞부분 vs 뒷부분')
+            plt.xlabel('Sample Index (within chunk)')
+            plt.ylabel('Average PPG Value')
+            plt.grid(True, alpha=0.3)
+            plt.legend()
+
+            # 평균 저장
+            mean_output_path = os.path.join(viz_dir, f"{file_name}_avg_comparison.png")
+            plt.savefig(mean_output_path)
+            plt.close()
+
+            print(f"평균 비교 시각화 파일 저장 : {mean_output_path}")
+
+        except Exception as e:
+            print(f"파일 처리 중 오류 발생: {str(e)}")
+
+
+def evaluate_file(file_path, threshold_value, model, viz_dir=None, file_name=None):
+    test_segments, usable_or_rejected, cnn_predictions, true_labels, avg_peak_values = reshape_vector_to_matrix_test(
+        file_path, threshold_value, model)
+
+    total_chunks = len(test_segments)
+    rejected_chunks = usable_or_rejected.count(0)
+    rejected_percent = (rejected_chunks / total_chunks) * 100 if total_chunks > 0 else 0
+
+    usable_indices = [i for i, val in enumerate(usable_or_rejected) if val == 1]
+
+    correct_cnn_predictions = sum(1 for i in usable_indices
+                                  if cnn_predictions[i] == true_labels[i])
+    cnn_accuracy = (correct_cnn_predictions / len(usable_indices)) * 100 if len(usable_indices) > 0 else 0
+
+    true_0_indices = [i for i in usable_indices if true_labels[i] == 0]
+    true_1_indices = [i for i in usable_indices if true_labels[i] == 1]
+
+    correct_cnn_0 = sum(1 for i in true_0_indices if cnn_predictions[i] == 0)
+    cnn_0_accuracy = (correct_cnn_0 / len(true_0_indices)) * 100 if len(true_0_indices) > 0 else 0
+
+    correct_cnn_1 = sum(1 for i in true_1_indices if cnn_predictions[i] == 1)
+    cnn_1_accuracy = (correct_cnn_1 / len(true_1_indices)) * 100 if len(true_1_indices) > 0 else 0
+
+    if viz_dir and file_name:
+        visualize_results(test_segments, true_labels, cnn_predictions, usable_or_rejected,
+                                     viz_dir, file_name, cnn_accuracy, cnn_0_accuracy, cnn_1_accuracy,
+                                     len(true_0_indices), len(true_1_indices), rejected_percent)
+
+    # 청크 개수 출력
+    print("정답:", " ".join(map(str, true_labels)))
+    print("CNN 예측:", " ".join(map(str, cnn_predictions)))
+
+    return {
+        'total_chunks': total_chunks,
+        'rejected_chunks': rejected_chunks,
+        'rejected_percent': rejected_percent,
+        'usable_chunks': len(usable_indices),
+        'cnn_correct': correct_cnn_predictions,
+        'cnn_accuracy': cnn_accuracy,
+        'cnn_predictions': cnn_predictions,
+        'true_labels': true_labels,
+        'peak_values': avg_peak_values,
+        'usable_or_rejected': usable_or_rejected,
+        'true_0_count': len(true_0_indices),
+        'true_1_count': len(true_1_indices),
+        'cnn_0_accuracy': cnn_0_accuracy,
+        'cnn_1_accuracy': cnn_1_accuracy,
+        'correct_cnn_0': correct_cnn_0,
+        'correct_cnn_1': correct_cnn_1
+    }
 
 
 def process_ppg_files(file_paths, threshold_value, model_path, viz_dir):
     model = load_model(model_path)
     overall_results = []
 
-    # 시각화 디렉토리 생성
     os.makedirs(viz_dir, exist_ok=True)
 
     for file_counter, file_path in enumerate(file_paths):
@@ -263,7 +394,6 @@ def process_ppg_files(file_paths, threshold_value, model_path, viz_dir):
         except Exception as e:
             print(f"파일 처리 중 오류 발생: {str(e)}")
 
-    # 전체 결과 계산
     total_chunks = sum(r['total_chunks'] for r in overall_results)
     total_rejected = sum(r['rejected_chunks'] for r in overall_results)
     total_rejected_percent = (total_rejected / total_chunks * 100) if total_chunks > 0 else 0
@@ -281,7 +411,6 @@ def process_ppg_files(file_paths, threshold_value, model_path, viz_dir):
     total_correct_cnn_1 = sum(r['correct_cnn_1'] for r in overall_results)
     total_cnn_1_accuracy = (total_correct_cnn_1 / total_true_1 * 100) if total_true_1 > 0 else 0
 
-    # 전체 결과 출력
     print("\n===== 전체 결과 =====")
     print(f"전체 청크 수: {total_chunks}")
     print(f"사용 불가능한 청크(-1): {total_rejected} ({total_rejected_percent:.2f}%)")
@@ -292,13 +421,11 @@ def process_ppg_files(file_paths, threshold_value, model_path, viz_dir):
     print(f"  - 레이블 0 정확도: {total_cnn_0_accuracy:.2f}%")
     print(f"  - 레이블 1 정확도: {total_cnn_1_accuracy:.2f}%")
 
-    # 전체 결과 시각화
     create_overall_visualization(overall_results, viz_dir, total_cnn_accuracy,
                                  total_cnn_0_accuracy, total_cnn_1_accuracy,
                                  total_rejected_percent)
 
     return overall_results
-
 
 def create_overall_visualization(results, viz_dir, overall_accuracy, label0_acc, label1_acc, rejected_percent):
     plt.figure(figsize=(16, 12))
@@ -393,28 +520,29 @@ def create_overall_visualization(results, viz_dir, overall_accuracy, label0_acc,
 
     print(f"파일 매핑 저장 완료: {output_mapping_path}")
 
+if __name__=="__main__":
+    file_paths = [
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\jh_left\1681815686266\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\jh_right\1681261790949\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m1_left\1675931125936\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m1_right\1681822657751\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m2_left\1681269276864\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m2_right\1675932659426\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m3_left\1675932257870\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m3_right\1681823785425\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m4_left\1675933819438\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\m4_right\1681270427012\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\w1_left\1681824836513\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\w1_right\1675933307027\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\w2_left\1675934782377\ppg_green.txt",
+        r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\test_data\w2_right\1681271399482\ppg_green.txt"
+    ]
 
-file_paths = [
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\jh_left\1681815686266\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\jh_right\1681261790949\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m1_left\1675931125936\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m1_right\1681822657751\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m2_left\1681269276864\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m2_right\1675932659426\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m3_left\1675932257870\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m3_right\1681823785425\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m4_left\1675933819438\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\m4_right\1681270427012\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\w1_left\1681824836513\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\w1_right\1675933307027\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\w2_left\1675934782377\ppg_green.txt",
-    r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\test_data\w2_right\1681271399482\ppg_green.txt"
-]
+    threshold_csv_path = r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\HeartGPT-main\Transformer_Generating_and_1D-CNN_Classification_Model\threshold_value_1.csv"
+    model_path = r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\processed_data\best_emotion_model.h5"
+    viz_dir = r"D:\pythonProject\Emotion-Classification-2-Transformer-Application-master\Emotion-Classification-2-Transformer-Application-master\Dataset\processed_data\test_visualization"
+    threshold_value = np.loadtxt(threshold_csv_path)
 
-threshold_csv_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\HeartGPT-main\Transformer_Generating_and_1D-CNN_Classification_Model\threshold_value_1.csv"
-model_path = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\best_emotion_model.h5"
-viz_dir = r"C:\Users\user\PycharmProjects\Emotion Classification 3\Dataset\processed_data\test_visualization"
+    results = process_ppg_files(file_paths, threshold_value, model_path, viz_dir)
+    visualize_overlapping_chunks(file_paths, viz_dir)
 
-threshold_value = np.loadtxt(threshold_csv_path)
-
-results = process_ppg_files(file_paths, threshold_value, model_path, viz_dir)
